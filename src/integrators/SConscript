@@ -19,6 +19,11 @@ plugins += env.SharedLibrary('irrcache', ['misc/irrcache.cpp', 'misc/irrcache_pr
 plugins += env.SharedLibrary('multichannel', ['misc/multichannel.cpp'])
 plugins += env.SharedLibrary('field', ['misc/field.cpp'])
 plugins += env.SharedLibrary('motion', ['misc/motion.cpp'])
+env.Append(LIBS=['libarmadillo'])
+plugins += env.SharedLibrary('matsep', ['matrix_separation/TLAH/PDMS.cpp', 'matrix_separation/BlockSenseProcess.cpp',
+		'matrix_separation/LCMSIntegrator.cpp', 'matrix_separation/ManyLightIntegrator.cpp',
+		'matrix_separation/PixelSliceRenderProcess.cpp', 'matrix_separation/SamplePath.cpp', 'matrix_separation/SliceProcess.cpp',
+		'matrix_separation/VPLGenerateProcess.cpp', 'matrix_separation/VPointMap.cpp', 'matrix_separation/VSensor.cpp'])
 
 # Bidirectional techniques
 bidirEnv = env.Clone()
