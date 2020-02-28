@@ -149,6 +149,10 @@ public:
         m_specularSamplingWeight = 0.0f;
     }
 
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
     RoughCoating(Stream *stream, InstanceManager *manager)
      : BSDF(stream, manager) {
         m_type = (MicrofacetDistribution::EType) stream->readUInt();
@@ -162,6 +166,10 @@ public:
         m_invEta = 1 / m_eta;
 
         configure();
+    }
+
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
     }
 
     void serialize(Stream *stream, InstanceManager *manager) const {

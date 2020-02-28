@@ -136,6 +136,10 @@ public:
         configure();
     }
 
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
     void configure() {
         unsigned int extraFlags = 0;
         if (m_alphaU != m_alphaV)
@@ -223,6 +227,10 @@ public:
             result += m_diffuseReflectance->eval(bRec.its) * INV_PI;
 
         return result * Frame::cosTheta(bRec.wo);
+    }
+
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(1.f);
     }
 
     Float pdf(const BSDFSamplingRecord &bRec, EMeasure measure) const {

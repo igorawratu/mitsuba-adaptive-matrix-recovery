@@ -224,6 +224,14 @@ public:
         configure();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
+    }
+
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 
@@ -345,6 +353,14 @@ public:
             return m_specularTransmittance->eval(bRec.its)
                 * std::abs(value * factor * factor);
         }
+    }
+
+    Spectrum getDiffuseReflectance(const Intersection& its) const{
+        return Spectrum(0.f);
+    }
+
+    bool isDielectric() const{
+        return true;
     }
 
     Float pdf(const BSDFSamplingRecord &bRec, EMeasure measure) const {

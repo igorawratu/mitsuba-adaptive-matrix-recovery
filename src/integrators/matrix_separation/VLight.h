@@ -77,7 +77,8 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 	Point position;
 	Vector direction;
 
-	VOrientedLight(const Spectrum &_intensity, const Point &_position, const Vector &_direction) : VLight(_intensity), position(_position), direction(_direction) { }
+	VOrientedLight(const Spectrum &_intensity, const Point &_position, const Vector &_direction) :
+		VLight(_intensity), position(_position), direction(_direction) { }
 
 	VOrientedLight(Stream *stream, InstanceManager *manager) : VLight(stream, manager) {
 		position = Point(stream);
@@ -120,8 +121,7 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 
 	virtual Spectrum evalMTD(const VSensor *sensor, Float clamp) const
 	{
-		const Intersection &its = sensor->its;
-		
+		/*const Intersection &its = sensor->its;
 
 		Vector wo = position - its.p;
 		Float dist_sqr = dot(wo, wo);
@@ -145,7 +145,27 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 			}
 		}
 
-		return TD * M;
+		return TD * M;*/
+
+		//Changing their light calculation to be in line with mine
+		const Intersection& its = sensor->its;
+		Vector wi = position - its.p;
+		float d = std::max(wi.length(), clamp);
+		wi = normalize(wi);	
+
+		float atten = 1.f / (d * d);
+		float light_bsdf = std::max(dot(-wi, direction), 0.0f) * INV_PI;
+
+		const BSDF *bsdf = its.getBSDF();
+		BSDFSamplingRecord brec(its, its.toLocal(wi));
+		Spectrum sensor_bsdf = bsdf->eval(brec) * sensor->scattering_normalization;
+
+		Spectrum contrib = sensor_bsdf * atten * light_bsdf;
+		Spectrum emission(0.f);
+
+		emission = its.isEmitter() ? its.Le(its.shFrame.n) : Spectrum(0.f);
+
+		return contrib + emission;
 	}
 
 	virtual void evalRawMTD(Spectrum &d_M, Spectrum &s_M, Float &TD, const VSensor *sensor, Float clamp) const
@@ -722,9 +742,13 @@ struct VOrientedLightNode : public VLightNode  {
 
 		cone = DirConef::Union(l->cone, r->cone);
 
-
-		intensity = l->intensity + r->intensity;
-		rep_light = random->nextFloat() <= (l->intensity.average() / intensity.average()) ? l->rep_light : r->rep_light;
+		float selection = random->nextFloat();
+		float total_intensity = l->intensity.getLuminance() + r->intensity.getLuminance();
+		intensity = selection <= (l->intensity.getLuminance() / total_intensity) ? 
+			l->intensity / l->intensity.getLuminance() * total_intensity :
+			r->intensity / r->intensity.getLuminance() * total_intensity;
+		//intensity = l->intensity + r->intensity;
+		rep_light = selection <= (l->intensity.getLuminance() / total_intensity) ? l->rep_light : r->rep_light;
 	}
 
 	Spectrum evalMTD(const VSensor *sensor, Float clamp) const {

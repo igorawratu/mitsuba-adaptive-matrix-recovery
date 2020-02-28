@@ -240,6 +240,10 @@ public:
         configure();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 
@@ -311,7 +315,7 @@ public:
         Float alpha = m_alpha->eval(its).average();
         Float Ftr = m_externalRoughTransmittance->evalDiffuse(alpha);
 
-        return m_diffuseReflectance->eval(its) * Ftr;
+        return m_diffuseReflectance->eval(its);// * Ftr;
     }
 
     Spectrum getSpecularReflectance(const Intersection &its) const {
@@ -344,15 +348,17 @@ public:
         );
 
         Spectrum result(0.0f);
+        const Vector H = normalize(bRec.wo+bRec.wi);
+        const Float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta);
         if (hasSpecular) {
             /* Calculate the reflection half-vector */
-            const Vector H = normalize(bRec.wo+bRec.wi);
+            
 
             /* Evaluate the microfacet normal distribution */
             const Float D = distr.eval(H);
 
             /* Fresnel term */
-            const Float F = fresnelDielectricExt(dot(bRec.wi, H), m_eta);
+            
 
             /* Smith's shadow-masking function */
             const Float G = distr.G(bRec.wi, bRec.wo, H);
@@ -366,7 +372,7 @@ public:
 
         if (hasDiffuse) {
             Spectrum diff = m_diffuseReflectance->eval(bRec.its);
-            Float T12 = m_externalRoughTransmittance->eval(Frame::cosTheta(bRec.wi), distr.getAlpha());
+            /*Float T12 = m_externalRoughTransmittance->eval(Frame::cosTheta(bRec.wi), distr.getAlpha());
             Float T21 = m_externalRoughTransmittance->eval(Frame::cosTheta(bRec.wo), distr.getAlpha());
             Float Fdr = 1-m_internalRoughTransmittance->evalDiffuse(distr.getAlpha());
 
@@ -375,7 +381,8 @@ public:
             else
                 diff /= 1-Fdr;
 
-            result += diff * (INV_PI * Frame::cosTheta(bRec.wo) * T12 * T21 * m_invEta2);
+            result += diff * (INV_PI * Frame::cosTheta(bRec.wo) * T12 * T21 * m_invEta2);*/
+            result += diff * INV_PI * Frame::cosTheta(bRec.wo) * (1.0f - F) * (1.0f - F);
         }
 
         return result;

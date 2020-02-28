@@ -144,6 +144,14 @@ public:
         configure();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
+    }
+
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its) + m_nested->getSpecularReflectance(its);
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 

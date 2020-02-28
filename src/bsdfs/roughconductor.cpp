@@ -213,6 +213,22 @@ public:
         configure();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return m_eta;
+    }
+
+    Spectrum getK(Vector wi) const{
+        return m_k;
+    }
+
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
+    bool isConductor() const{
+        return true;
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 
@@ -364,6 +380,10 @@ public:
         }
 
         return F * weight;
+    }
+
+    Spectrum getDiffuseReflectance(const Intersection& its) const{
+        return Spectrum(0.f);
     }
 
     Spectrum sample(BSDFSamplingRecord &bRec, Float &pdf, const Point2 &sample) const {

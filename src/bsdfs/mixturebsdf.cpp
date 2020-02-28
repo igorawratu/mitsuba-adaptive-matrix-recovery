@@ -102,6 +102,30 @@ public:
             m_bsdfs[i]->decRef();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return m_bsdfs[0]->getEtaSpec(wi);
+    }
+
+    Spectrum getK(Vector wi) const{
+        return m_bsdfs[0]->getEtaSpec(wi);
+    }
+
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_bsdfs[0]->getSpecularReflectance(its);
+    }
+
+    Spectrum getDiffuseReflectance(const Intersection& its) const{
+        return m_bsdfs[0]->getDiffuseReflectance(its);
+    }
+
+    bool isConductor() const{
+        return m_bsdfs[0]->isConductor();
+    }
+
+    bool isDielectric() const{
+        return m_bsdfs[0]->isDielectric();
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 

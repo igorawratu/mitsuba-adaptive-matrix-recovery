@@ -184,6 +184,14 @@ public:
         configure();
     }
 
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
+    Spectrum getDiffuseReflectance(const Intersection& its) const{
+        return Spectrum(0.f);
+    }
+
     void configure() {
         /* Verify the input parameters and fix them if necessary */
         m_specularReflectance = ensureEnergyConservation(
@@ -286,6 +294,18 @@ public:
 
     Float getRoughness(const Intersection &its, int component) const {
         return 0.0f;
+    }
+
+    Spectrum getEtaSpec(Vector wi) const{
+        return m_eta;
+    }
+
+    Spectrum getK(Vector wi) const{
+        return m_k;
+    }
+
+    bool isConductor() const{
+        return true;
     }
 
     std::string toString() const {

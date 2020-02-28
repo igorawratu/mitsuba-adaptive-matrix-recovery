@@ -450,6 +450,21 @@ public:
      */
     virtual Float getEta() const;
 
+    //gets k component of material if there is one
+    virtual Spectrum getK(Vector wi) const{
+        return Spectrum(0.f);
+    }
+
+    virtual Spectrum getEtaSpec(Vector wi) const = 0;
+
+    virtual bool isDielectric() const{
+        return false;
+    }
+
+    virtual bool isConductor() const{
+        return false;
+    }
+
     /**
      * \brief For rough BSDFs: return the root mean square
      * surface roughness of the given BSDF component

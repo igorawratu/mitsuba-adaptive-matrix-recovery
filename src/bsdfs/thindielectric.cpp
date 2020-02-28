@@ -19,6 +19,7 @@
 #include <mitsuba/render/bsdf.h>
 #include <mitsuba/hw/basicshader.h>
 #include "ior.h"
+#include <iostream>
 
 MTS_NAMESPACE_BEGIN
 
@@ -95,6 +96,22 @@ public:
         m_specularReflectance = static_cast<Texture *>(manager->getInstance(stream));
         m_specularTransmittance = static_cast<Texture *>(manager->getInstance(stream));
         configure();
+    }
+
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        return m_specularReflectance->eval(its);
+    }
+
+    Spectrum getDiffuseReflectance(const Intersection& its) const{
+        return Spectrum(0.f);
+    }
+
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
+    }
+
+    bool isDielectric() const{
+        return true;
     }
 
     void serialize(Stream *stream, InstanceManager *manager) const {

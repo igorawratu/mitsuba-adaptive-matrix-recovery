@@ -1,5 +1,7 @@
 #include <mitsuba/core/fstream.h>
 #include <mitsuba/core/mstream.h>
+#include <mitsuba/core/statistics.h>
+#include <mitsuba/core/qmc.h>
 
 #include <queue>
 #include <unordered_map>
@@ -45,7 +47,7 @@ ManyLightIntegrator::ManyLightIntegrator(const Properties &props) : Integrator(p
 	m_backGroundFile = props.getString("backGroundFile", "");
 
 	/* Relative clamping factor (0=no clamping, 1=full clamping) */
-	m_clamping = props.getFloat("clamping", 0.02f);
+	//m_clamping = props.getFloat("clamping", 0.02f);
 	m_cutoff = props.getFloat("cutoff", 0.0f);
 	m_vpl_count = props.getInteger("vplCount", 1024);
 	m_sliceSize = props.getInteger("sliceSize", 16);
@@ -129,14 +131,217 @@ ManyLightIntegrator::ManyLightIntegrator(Stream *stream, InstanceManager *manage
 	SLog(EError, "Unfinished region");
 }
 
+float calculateMinDistance(const Scene *scene, const std::vector<VPL>& vpls, float clamping){
+	float acc_near = 0.f;
+	float acc_far = 0.f;
+	std::uint32_t lights_processed = 0;
 
+	for(std::uint32_t i = 0; i < vpls.size(); ++i){
+		bool surface_emitter = vpls[i].type == ESurfaceVPL;
+		float near = std::numeric_limits<float>::max();
+		float far = std::numeric_limits<float>::min();
 
+		for(int k = 0; k < 128; ++k){
+			if(vpls[i].type == EDirectionalEmitterVPL){
+				continue;
+			}
+
+			Point2 sample(sample02(k));
+
+			Ray ray(vpls[i].its.p,
+				surface_emitter ? vpls[i].its.shFrame.toWorld(warp::squareToCosineHemisphere(sample))
+				: warp::squareToUniformSphere(sample), 0);
+
+			Float t;
+			ConstShapePtr shape;
+			Normal n;
+			Point2 uv;
+
+			float acc = 0.f;
+			bool hit = false;
+
+			for(std::uint8_t j = 0; j < 5; ++j){
+				if(!scene->rayIntersect(ray, t, shape, n, uv)){
+					break;
+				}
+
+				acc += t;
+				if (!(shape->getBSDF()->getType() & BSDF::ETransmission)) {
+					hit = true;
+					break;
+				}
+
+				ray.o = ray(t);
+			}
+			
+			if (hit && acc > 0.f) {
+				near = std::min(near, acc);
+				far = std::max(far, acc);
+			}
+
+		}
+
+		if(near >= far){
+			BSphere bsphere(scene->getKDTree()->getAABB().getBSphere());
+			Float min_dist = 0;
+
+			if ((vpls[i].type == ESurfaceVPL || vpls[i].type == EPointEmitterVPL) &&
+					!bsphere.contains(vpls[i].its.p))
+				min_dist = (bsphere.center - vpls[i].its.p).length() - bsphere.radius;
+
+			far = min_dist + bsphere.radius * 2.25f;
+			near = std::max(min_dist - 0.25f * bsphere.radius, far * 1e-5f);
+		}
+		else{
+			near = std::max(near / 1.5f, far * 1e-5f);
+			far *= 1.5f;
+		}
+
+		acc_near += near;
+		acc_far += far;
+		lights_processed++;
+	}
+
+	acc_near /= (float)lights_processed;
+	acc_far /= (float)lights_processed;
+
+	return acc_near + (acc_far - acc_near) * clamping;
+}
+
+size_t generateVPLs(const Scene *scene, size_t offset, size_t count, int max_depth, bool prune, 
+	std::vector<VPL> &vpls) {
+	if (max_depth <= 1)
+		return 0;
+
+	Properties props("independent");
+	ref<Sampler> sampler = static_cast<Sampler*>(PluginManager::getInstance()->createObject(MTS_CLASS(Sampler), props));
+	sampler->configure();
+	sampler->generate(Point2i(0));
+
+	const Sensor *sensor = scene->getSensor();
+	Float time = sensor->getShutterOpen() + sensor->getShutterOpenTime() * sampler->next1D();
+
+	const Frame standard_frame(Vector(1, 0, 0), Vector(0, 1, 0), Vector(0, 0, 1));
+	int retries = 0;
+
+	while (vpls.size() < count) {
+		//sampler->setSampleIndex(++offset);
+		offset++;
+
+		if (vpls.empty() && ++retries > 10000) {
+			return 0;
+		}
+
+		PositionSamplingRecord point_sample(time);
+		DirectionSamplingRecord direction_sample;
+		Spectrum weight = scene->sampleEmitterPosition(point_sample, sampler->next2D());
+
+		size_t start = vpls.size();
+
+		const Emitter *emitter = static_cast<const Emitter *>(point_sample.object);
+
+		//samples an emitter, adds it to the vpl vector, and then extracts a point and direction sample to be used later for additional
+		//vpl generation
+		if (!emitter->isEnvironmentEmitter()) {
+			EVPLType type = emitter->needsDirectionSample() ? ESurfaceVPL : EPointEmitterVPL;
+			VPL vpl(type, weight);
+			vpl.its.p = point_sample.p;
+			vpl.its.time = time;
+			vpl.its.shFrame = point_sample.n.isZero() ? standard_frame : Frame(point_sample.n);
+			vpl.emitter = emitter;
+			vpls.push_back(vpl);
+
+			if(type == ESurfaceVPL){
+				weight *= emitter->sampleDirection(direction_sample, point_sample, sampler->next2D());
+			}
+		}
+		else {
+			DirectSamplingRecord direct_sample(scene->getKDTree()->getAABB().getCenter(), point_sample.time);
+
+			Spectrum direct_sample_weight = emitter->sampleDirect(direct_sample, sampler->next2D())	/ scene->pdfEmitterDiscrete(emitter);
+
+			if (direct_sample_weight.isZero())
+				continue;
+
+			VPL vpl(EDirectionalEmitterVPL, direct_sample_weight);
+			vpl.its.p = Point(0.0);
+			vpl.its.time = time;
+			vpl.its.shFrame = Frame(-direct_sample.d);
+			vpl.emitter = emitter;
+			vpls.push_back(vpl);
+			direction_sample.d = -direct_sample.d;
+
+			Point2 offset = warp::squareToUniformDiskConcentric(sampler->next2D());
+			Vector transformed_offset = Frame(direct_sample.d).toWorld(Vector(offset.x, offset.y, 0));
+			BSphere bounding_sphere = scene->getKDTree()->getAABB().getBSphere();
+			point_sample.p = bounding_sphere.center + (transformed_offset - direction_sample.d) * bounding_sphere.radius;
+			weight = direct_sample_weight * M_PI * bounding_sphere.radius * bounding_sphere.radius;
+		}
+
+		int depth = 2; 
+		Ray ray(point_sample.p, direction_sample.d, time);
+		Intersection its;
+		//generates vpls from additional bounces
+		while (!weight.isZero() && (depth < max_depth || max_depth == -1) && vpls.size() < count) {
+			if (!scene->rayIntersect(ray, its))
+				break;
+
+			const BSDF *bsdf = its.getBSDF();
+			BSDFSamplingRecord bsdf_sample(its, sampler, EImportance);
+			Spectrum bsdf_sample_weight = bsdf->sample(bsdf_sample, sampler->next2D());
+			if (bsdf_sample_weight.isZero())
+				break;
+
+			float approx_albedo = std::fmin(0.95f, bsdf_sample_weight.max());
+
+			//roulette
+            if (sampler->next1D() > approx_albedo){
+				break;
+			}
+			
+			weight *= bsdf_sample_weight;
+
+			VPL vpl(ESurfaceVPL, weight);
+			vpl.its = its;
+
+			if (BSDF::getMeasure(bsdf_sample.sampledType) == ESolidAngle) {
+				vpls.push_back(vpl);
+			}
+
+			Vector wi = -ray.d, wo = its.toWorld(bsdf_sample.wo);
+
+			ray = Ray(its.p, wo, 0.0f);
+
+			float wi_dot_geometricnormal = dot(its.geoFrame.n, wi);
+			float wo_dot_geometricnormal = dot(its.geoFrame.n, wo);
+			if (wi_dot_geometricnormal * Frame::cosTheta(bsdf_sample.wi) <= 0 || 
+				wo_dot_geometricnormal * Frame::cosTheta(bsdf_sample.wo) <= 0) {
+				break;
+			}
+
+			++depth;
+		}
+
+		size_t end = vpls.size();
+		float lights_added = end - start;
+		for (size_t i = start; i < end; ++i){
+			vpls[i].emitterScale = 1.0f / lights_added;
+		}
+	}
+
+	return offset;
+}
 
 void ManyLightIntegrator::generateVPL(const Scene *scene, const Sensor *sensor, Sampler *sampler, Random *random, const VPLGenerateWork *vWork, VPLGenerateResult *vResult)
 {
-	std::deque<VPL> result;
+	std::vector<VPL> result;
+	vResult->offset = generateVPLs(scene, vWork->m_offset, vWork->m_numVPL, vWork->m_maxDepth, false, result);
 
-	vResult->offset = generateVPLs(scene, random, vWork->m_offset, vWork->m_numVPL, vWork->m_maxDepth, false, result);
+	{
+		std::lock_guard<std::mutex> lock(vpl_mutex_);
+		vpls_.insert(vpls_.end(), result.begin(), result.end());
+	}
+
 	vResult->path_count = vResult->offset - vWork->m_offset;
 	vResult->m_vpls.clear();
 	vResult->m_vpls.resize(result.size(), *result.begin());
@@ -190,13 +395,13 @@ bool ManyLightIntegrator::preprocess(const Scene *scene, RenderQueue *queue, con
 
 		if (m_vpl_count <= 1024) {
 			
-			std::deque<VPL> m_vpls;
+			std::vector<VPL> m_vpls;
+			m_vpl_offset = generateVPLs(scene, 0, m_vpl_count, m_vplMaxDepth, false, m_vpls);
+			vpls_.insert(vpls_.end(), m_vpls.begin(), m_vpls.end());
 
-			ref<Random> constant_random = new Random();
-			m_vpl_offset = generateVPLs(scene, constant_random, 0, m_vpl_count, m_vplMaxDepth, false, m_vpls);
 			m_vpl_path_count = m_vpl_offset;
 
-			for (std::deque<VPL>::iterator itr = m_vpls.begin(); itr != m_vpls.end(); itr++) {
+			for (std::vector<VPL>::iterator itr = m_vpls.begin(); itr != m_vpls.end(); itr++) {
 				m_vpl_map->raw_vpl.push_back(*itr);
 			}
 		}
@@ -220,6 +425,8 @@ bool ManyLightIntegrator::preprocess(const Scene *scene, RenderQueue *queue, con
 				return false;
 			}
 		}
+		m_clamping = calculateMinDistance(scene, vpls_, 0.1f);
+		vpls_.clear();
 
 		Log(EInfo, "Generated %i virtual point lights", m_vpl_map->raw_vpl.size());
 
@@ -532,8 +739,8 @@ Spectrum ManyLightIntegrator::nvLi(const RayDifferential &ray, RadianceQueryReco
 	}
 
 	/* Possibly include emitted radiance if requested */
-	if (its.isEmitter() && (rRec.type & RadianceQueryRecord::EEmittedRadiance)
-		&& (!m_hideEmitters || scattered)) {
+	if (its.isEmitter()/* && (rRec.type & RadianceQueryRecord::EEmittedRadiance)
+		&& (!m_hideEmitters || scattered)*/) {
 		Spectrum v = its.Le(-ray.d);
 		Float m = v.max();
 		if (m > 1.0f) {
@@ -545,21 +752,22 @@ Spectrum ManyLightIntegrator::nvLi(const RayDifferential &ray, RadianceQueryReco
 
 
 	/* Include radiance from a subsurface scattering model if requested */
-	if (its.hasSubsurface() && (rRec.type & RadianceQueryRecord::ESubsurfaceRadiance)) {
+	/*if (its.hasSubsurface() && (rRec.type & RadianceQueryRecord::ESubsurfaceRadiance)) {
 		Spectrum v = its.LoSub(scene, rRec.sampler, -ray.d, rRec.depth);
 		Float m = v.max();
 		if (m > 1.0f) {
 			v /= m;
 		}
 		Li += v;
-	}
+	}*/
 
 
 	return Li;
 }
 
 
-void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQueryRecord &rRec, SamplePath *samplePath) const
+void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQueryRecord &rRec, SamplePath *samplePath,
+		Sampler* sampler) const
 {
 
 	//if (//Point2i(samplePath->getPos()) == (Point2i(103, 604)) ||
@@ -583,7 +791,7 @@ void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQuery
 
 	/* Some aliases and local variables */
 	const Scene *scene = rRec.scene;
-	Intersection &its = rRec.its;
+	//Intersection &its = rRec.its;
 	RayDifferential ray(r);
 	bool scattered = false;
 	
@@ -594,91 +802,33 @@ void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQuery
 	ray.mint = Epsilon;
 
 	while (rRec.depth <= m_vpsMaxDepth || m_vpsMaxDepth < 0) {
-	
-		samplePath->addLi(throughput * nvLi(ray, rRec, scattered, shadow_count));
-
-		if (!its.isValid()) {
+		if (!rRec.its.isValid()) {
+			samplePath->addLi(throughput * nvLi(ray, rRec, scattered, shadow_count));
 			samplePath->hit_background = true;
 			break;
 		}
 
+        if(rRec.its.isEmitter() || rRec.its.getBSDF()->getType() & BSDF::ESmooth){
+        	if(rRec.its.isEmitter()){
+        		samplePath->addLi(throughput * nvLi(ray, rRec, scattered, shadow_count));
+        	}
 
-		const BSDF *bsdf = its.getBSDF(ray);
+        	samplePath->emplaceSensor(rRec.its, throughput);
+        	break;
+        }
+
+
+		const BSDF *bsdf = rRec.its.getBSDF();
 	
-		if ((rRec.depth > m_vpsMaxDepth && m_vpsMaxDepth > 0) || (m_strictNormals && dot(ray.d, its.geoFrame.n) * Frame::cosTheta(its.wi) >= 0))
-			return;
+		BSDFSamplingRecord bsdf_sample_record(rRec.its, sampler);
+        bsdf_sample_record.typeMask = rRec.its.getBSDF()->isDielectric() ? BSDF::EDeltaTransmission | BSDF::ENull : 
+        	BSDF::EDeltaReflection;
 
-	
-		if (rRec.type & RadianceQueryRecord::EDirectSurfaceRadiance && (bsdf->getType() & BSDF::ESmooth))
-		{
-			//ii += 0.01;
-			//samplePath->addLi(throughput * rRec.its.color);
-			// record the VSensor for post rendering	
-		
-			samplePath->emplaceSensor(rRec.its, throughput);
-			//samplePath->generateSensor(rRec.its, throughput);
-		}
+        rRec.its.getBSDF()->sample(bsdf_sample_record, sampler->next2D());
+        ray = Ray(rRec.its.p, bsdf_sample_record.its.toWorld(bsdf_sample_record.wo), ray.time);
+        scene->rayIntersect(ray, rRec.its);
 
-
-
-		if (its.getBSDF()->getType() & BSDF::EDelta) {
-
-			BSDFSamplingRecord bRec(its, rRec.sampler, ERadiance);
-			bRec.typeMask = BSDF::EDelta;
-
-			Spectrum bsdfWeight = bsdf->sample(bRec, rRec.nextSample2D());
-	
-			if (bsdfWeight.isZero())
-				break;
-
-			scattered |= bRec.sampledType != BSDF::ENull;
-
-			/* Prevent light leaks due to the use of shading normals */
-			const Vector wo = its.toWorld(bRec.wo);
-
-			Float woDotGeoN = dot(its.geoFrame.n, wo);
-			if (m_strictNormals && woDotGeoN * Frame::cosTheta(bRec.wo) <= 0)
-				break;
-
-			/* Trace a ray in this direction */
-			ray = Ray(its.p, wo, ray.time);
-	
-			if (scene->rayIntersect(ray, its)) {
-
-			}
-			else {
-				/* Intersected nothing -- perhaps there is an environment map? */
-				const Emitter *env = scene->getEnvironmentEmitter();
-
-				if (env) {
-					if (m_hideEmitters || !scattered)
-						break;
-					DirectSamplingRecord dRec(its);
-					Spectrum value = env->evalEnvironment(ray);
-					samplePath->addLi(throughput * bsdfWeight * value);
-				}
-				else {
-					break;
-				}
-			}
-
-			/* Keep track of the throughput and relative
-			refractive index along the path */
-			throughput *= bsdfWeight;
-			eta *= bRec.eta;
-
-			/* Set the recursive query type. Stop if no surface was hit by the
-			BSDF sample or if indirect illumination was not requested */
-			if (!its.isValid() || !(rRec.type & RadianceQueryRecord::EIndirectSurfaceRadiance))
-				break;
-
-			//rRec.type = RadianceQueryRecord::ERadianceNoEmission;
-			rRec.depth++;
-		}
-		else {
-			break;
-		}
-
+        rRec.depth++;
 	}
 	
 
@@ -746,6 +896,10 @@ void ManyLightIntegrator::bindUsedResources(ParallelProcess *proc) const
 
 void ManyLightIntegrator::senseBlock(const Scene *scene, const Sensor *sensor, Sampler *sampler, VSensorBlock *block, const bool &stop, const std::vector< TPoint2<uint8_t> > &points) 
 {
+	Properties props("independent");
+    ref<Sampler> ind_sampler = static_cast<Sampler*>(PluginManager::getInstance()->createObject(MTS_CLASS(Sampler), props));
+    sampler->configure();
+    sampler->generate(Point2i(0));
 
 	Float diffScaleFactor = 1.0f /
 		std::sqrt((Float)sampler->getSampleCount());
@@ -812,7 +966,7 @@ void ManyLightIntegrator::senseBlock(const Scene *scene, const Sensor *sensor, S
 			sample_path->setPos(samplePos);
 			sample_path->setImportance(spec);
 
-			collectVSensor(sensorRay, rRec, sample_path);
+			collectVSensor(sensorRay, rRec, sample_path, ind_sampler);
 
 
 			sample_path->setAlpha(rRec.alpha);

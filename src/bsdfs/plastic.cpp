@@ -174,6 +174,10 @@ public:
         configure();
     }
 
+    Spectrum getEtaSpec(Vector wi) const{
+        return Spectrum(m_eta);
+    }
+
     void serialize(Stream *stream, InstanceManager *manager) const {
         BSDF::serialize(stream, manager);
 
@@ -217,7 +221,7 @@ public:
     }
 
     Spectrum getDiffuseReflectance(const Intersection &its) const {
-        return m_diffuseReflectance->eval(its) * (1-m_fdrExt);
+        return m_diffuseReflectance->eval(its);// * (1-m_fdrExt);
     }
 
     Spectrum getSpecularReflectance(const Intersection &its) const {

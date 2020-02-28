@@ -12,6 +12,7 @@
 
 #include <mitsuba/core/timer.h>
 #include <mitsuba/core/fstream.h>
+#include <iostream>
 
 #include "TLAH/tlah.h"
 #include "TLAH/redsvd.h"
@@ -102,7 +103,7 @@ using std::map;
 #define STOP_ERROR 0.01
 
 #define NEIGHBOR_RANGE 1
-#define MAX_EXPAND_COLUMN 4000
+#define MAX_EXPAND_COLUMN 1000
 
 #define BORDER_REINFORCE 0
 #define OUTLINE_REINFORCE 0
@@ -110,14 +111,14 @@ using std::map;
 //#define SHADOW_REINFORCE 1000 * 1000 * 10
 #define SHADOW_REINFORCE 20
 
-#define MAX_CUT_SIZE 400
-#define SPARSE_THRESHOLD 0.005
+#define MAX_CUT_SIZE 1000
+#define SPARSE_THRESHOLD 0.0005f
 
 #define NOISE_THRESHOLD 0.2
 #define SAMPLE_RATIO_ADD 1
 #define ROW_DYNAMIC_SAMPLE true
 #define MAX_AVG_EVAL 0.00001f
-#define DYNAMIC_SAMPLE_RATIO 0.2f
+#define DYNAMIC_SAMPLE_RATIO 0.2
 
 #endif
 
@@ -4105,12 +4106,12 @@ public:
 			}
 		}
 
-		if (n_valid > 50) {
+		/*if (n_valid > 50) {
 			intensity_threshold = std::max(matrix.sum_avg_eval * singular_threshold, MAX_AVG_EVAL);
 			error_threshold = std::max(0.1f * intensity_threshold, MAX_AVG_EVAL);
 
 			contractMatrix(matrix, intensity_threshold, error_threshold, random, shadow_count);
-		}
+		}*/
 
 		//cout << matrix.columns.size() << endl;
 
@@ -7449,7 +7450,6 @@ public:
 		//	n_error_sample[2] = n_row;
 		//}
 
-
 		for (int mn = 0; mn < sample_r.size(); mn++) {
 			int r = sample_r[mn];
 			Float random_float = random->nextFloat();
@@ -8201,7 +8201,6 @@ public:
 	
 		n_init_sample = std::max(n_init_sample, std::min(matrix.n_row, m_minimum_sample));
 		initMatrix(matrix, scene, slice_root, n_init_sample, shadowCount, max_cutsize);
-
 		
   		//bool find = false;
   		//for (int r = 0; r < matrix.rows.size(); r++) {
@@ -8230,6 +8229,8 @@ public:
 		//cout << slice_root->rep_sensor->its.p.toString() << endl;
 		//Log(EWarn, "init slice [%u %u %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		sparseSample(matrix, scene, sample_ratio, random, shadowCount);
+
+
 		
 
 	
@@ -8255,12 +8256,9 @@ public:
 		//Log(EWarn, "balance slice [%u %u %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		//randomSample(matrix, random);
 		balanceMatrix(matrix, random, shadowCount, sample_ratio, singular_thresholding);
-		
-		
 		record.recordInvisibleLight(matrix);
 		int n_column_before = matrix.columns.size();
-		matrix.removeEmptyColumn();
-		
+		//matrix.removeEmptyColumn();
 		
 		if (matrix.columns.size() == 0) {
 
@@ -8268,6 +8266,8 @@ public:
 		}
 
 		matrix.fixColumn();
+
+		//std::cout << matrix.columns.size() << std::endl;
 		
 		dynamicSampling(matrix, random, shadowCount, sample_ratio, 0.1, singular_thresholding);
 
@@ -8879,7 +8879,7 @@ protected:
 };
 
 
-MTS_IMPLEMENT_CLASS(LCMSIntegrator, false, ManyLightIntegrator)
+MTS_IMPLEMENT_CLASS(LCMSIntegrator, false, Integrator)
 MTS_EXPORT_PLUGIN(LCMSIntegrator, "Lightcut matrix separation integrator");
 MTS_NAMESPACE_END
 

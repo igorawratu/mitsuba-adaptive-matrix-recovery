@@ -119,6 +119,37 @@ public:
         }
     }
 
+    Spectrum getSpecularReflectance(const Intersection &its) const{
+        if (its.wi.z > 0){
+            return m_nestedBRDF[0]->getSpecularReflectance(its);
+        }
+        else{
+            return m_nestedBRDF[1]->getSpecularReflectance(its);
+        }
+    }
+
+    Spectrum getEtaSpec(Vector wi) const{
+        //if(Frame::cosTheta(wi) > 0){
+            return m_nestedBRDF[0]->getEtaSpec(wi);
+        //}
+        //else{
+        //    return m_nestedBRDF[1]->getEtaSpec(wi);
+        //}
+    }
+
+    Spectrum getK(Vector wi) const{
+        //if(Frame::cosTheta(wi) > 0){
+            return m_nestedBRDF[0]->getK(wi);
+        //}
+        //else{
+        //    return m_nestedBRDF[1]->getK(wi);
+        //}
+    }
+
+    bool isConductor() const{
+        return m_nestedBRDF[0]->isConductor();
+    }
+
     Float pdf(const BSDFSamplingRecord &bRec, EMeasure measure) const {
         BSDFSamplingRecord b(bRec);
 

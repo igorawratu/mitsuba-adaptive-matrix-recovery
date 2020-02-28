@@ -122,7 +122,7 @@ void VLightMap::generateStandardVPL(Random *random)
 			break;
 		case ESurfaceVPL: {
 
-				const BSDF *bsdf = itr->its.getBSDF();
+				/*const BSDF *bsdf = itr->its.getBSDF();
 
 				// hack : always make it toward normal with only diffuse component
 				
@@ -141,9 +141,9 @@ void VLightMap::generateStandardVPL(Random *random)
 				}
 			
 				if (!r.isZero()) {
-					r *= M_PI;            // standard VPL don't do this, but we use it to normalize D term : cos(theta) / PI
-					m_oriented_tree.m_leaves.emplace_back(itr->P * r, itr->its.p, itr->its.shFrame.n);
-				}
+					r *= M_PI;   */         // standard VPL don't do this, but we use it to normalize D term : cos(theta) / PI
+					m_oriented_tree.m_leaves.emplace_back(itr->P, itr->its.p, itr->its.shFrame.n);
+				//}
 				
 			}
 			break;

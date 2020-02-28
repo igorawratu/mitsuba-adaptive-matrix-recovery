@@ -7,6 +7,8 @@
 #include <mitsuba/render/integrator.h>
 #include <mitsuba/render/scene.h>
 #include <mitsuba/render/vpl.h>
+#include <mutex>
+#include <vector>
 
 #include "BlockSenseProcess.h"
 #include "SliceProcess.h"
@@ -29,7 +31,8 @@ public:
 	virtual ref<ParallelProcess> getPostProcess(const Scene *scene, RenderQueue *queue, const RenderJob *job, int sceneResID, int sensorResID, int samplerResID, int integratorResID);
 
 	/* return the non-vpl lighting */
-	virtual void collectVSensor(const RayDifferential &ray, RadianceQueryRecord &rRec, SamplePath *samplePath) const;
+	virtual void collectVSensor(const RayDifferential &ray, RadianceQueryRecord &rRec, 
+		SamplePath *samplePath, Sampler* sampler) const;
 
 	//virtual Spectrum Li2(const RayDifferential &ray,
 	//	RadianceQueryRecord &rRec) const;
@@ -92,10 +95,10 @@ protected:
 
 		Spectrum estimate = light->evalMTD(sensor, m_clamping);
 
-		if (estimate.average() <= m_cutoff) {
+		/*if (estimate.average() <= m_cutoff) {
 			estimate = Spectrum(0.0f);
 		}
-		else {
+		else */{
 			Ray r = light->shadowRay(sensor);
 			shadow_count++;
 			if (scene->rayIntersect(r)) {
@@ -173,6 +176,8 @@ protected:
 	int m_sliceSamplerResID = -1;
 
 	bool m_postprocess_slice = false;
+	std::vector<VPL> vpls_;
+	std::mutex vpl_mutex_;
 };
 
 
