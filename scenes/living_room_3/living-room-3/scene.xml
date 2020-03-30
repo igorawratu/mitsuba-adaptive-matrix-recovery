@@ -64,7 +64,7 @@
 	<bsdf type="twosided" id="Vase">
 		<bsdf type="roughplastic">
 			<float name="alpha" value="0.1"/>
-			<string name="distribution" value="beckmann"/>
+			<string name="distribution" value="ggx"/>
 			<float name="intIOR" value="1.5"/>
 			<float name="extIOR" value="1"/>
 			<boolean name="nonlinear" value="true"/>
@@ -101,7 +101,7 @@
 	<bsdf type="twosided" id="WhitePaint">
 		<bsdf type="roughplastic">
 			<float name="alpha" value="0.1"/>
-			<string name="distribution" value="beckmann"/>
+			<string name="distribution" value="ggx"/>
 			<float name="intIOR" value="1.5"/>
 			<float name="extIOR" value="1"/>
 			<boolean name="nonlinear" value="true"/>
@@ -112,7 +112,7 @@
 	<bsdf type="twosided" id="Sofa">
 		<bsdf type="roughplastic">
 			<float name="alpha" value="0.25"/>
-			<string name="distribution" value="beckmann"/>
+			<string name="distribution" value="ggx"/>
 			<float name="intIOR" value="1.5"/>
 			<float name="extIOR" value="1"/>
 			<boolean name="nonlinear" value="true"/>
