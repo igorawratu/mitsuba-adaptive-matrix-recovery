@@ -5810,7 +5810,7 @@ public:
 		for (uint32_t r = 0; r < n_row; r++) {
 			for (auto &spp : matrix.rows[r].spp_sensors) {
 				if(matrix.rows[r].sensor->its.isEmitter()){
-					spp.MVTDI += matrix.rows[r].sensor->its.Le(matrix.rows[r].sensor->its.shFrame.n);
+					spp.MVTDI += matrix.rows[r].sensor->its.Le(-matrix.rows[r].sensor->its.shFrame.n);
 				}
 			}
 		}
