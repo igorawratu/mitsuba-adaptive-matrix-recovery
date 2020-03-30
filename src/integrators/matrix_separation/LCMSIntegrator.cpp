@@ -8412,13 +8412,13 @@ public:
 #endif
 
 
-		/*if (std::min(D.n_rows, D.n_cols) >= 8) {
+		if (std::min(D.n_rows, D.n_cols) >= 8) {
 			Fmat green_picture;
 			drawGreenPicture(green_picture, matrix, sparse_column, S, L, D, random);
 			//pfm(green_picture, "ratio.pfm");
 			denoise_filter(matrix, L, S, D, sparse_column, shadowCount, random, green_picture);
 
-		}*/
+		}
 
 		// error detection
 #if 0
@@ -8654,8 +8654,8 @@ public:
 
 
 		//Log(EWarn, "begin fill up [%u %u, %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
-		Fmat &recoveredMat = L;
-		if (special) recoveredMat = D;
+		Fmat &recoveredMat = S;
+		if (special) recoveredMat = S;
 		//fillResult(matrix, recoveredMat, sparse_column, singular_column, result, scene, random);
 		fillResult_spp(matrix, recoveredMat, sparse_column, singular_column, result, scene, random);
 
