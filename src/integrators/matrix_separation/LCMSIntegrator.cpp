@@ -5807,6 +5807,15 @@ public:
 			}
 		}
 
+		for (uint32_t r = 0; r < n_row; r++) {
+			for (auto &spp : matrix.rows[r].spp_sensors) {
+				if(spp.sensor->its.isEmitter()){
+					spp.MVTDI += spp.sensor->its.Le(spp.sensor->its.shFrame.n);
+				}
+			}
+		}
+		
+
 		//////////////////////////////////////////////////////////////////////////
 		//ref<Random> random = new Random(matrix.m_slice_root->sampleBbox.min.x + matrix.m_slice_root->sampleBbox.min.y);
 		//Spectrum rs;
