@@ -162,13 +162,7 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 
 		Spectrum contrib = sensor_bsdf * atten * light_bsdf;
 
-		Spectrum light_energy(0.f);
-
-		if(its.isEmitter()){
-			light_energy = its.Le(-its.wi);
-		}
-
-		return contrib + light_energy;
+		return contrib;
 	}
 
 	virtual void evalRawMTD(Spectrum &d_M, Spectrum &s_M, Float &TD, const VSensor *sensor, Float clamp) const

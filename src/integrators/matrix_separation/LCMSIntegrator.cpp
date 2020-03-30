@@ -5807,6 +5807,12 @@ public:
 			}
 		}
 
+		for (auto &spp : matrix.rows[r].spp_sensors) {
+			if(rows[r]->its.isEmitter()){
+				spp.MVTDI += its.Le(its.shFrame.n);
+			}
+		}
+
 
 		//////////////////////////////////////////////////////////////////////////
 		//ref<Random> random = new Random(matrix.m_slice_root->sampleBbox.min.x + matrix.m_slice_root->sampleBbox.min.y);
