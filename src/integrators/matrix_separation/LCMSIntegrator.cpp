@@ -8654,7 +8654,7 @@ public:
 
 
 		//Log(EWarn, "begin fill up [%u %u, %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
-		Fmat &recoveredMat = D;
+		Fmat &recoveredMat = L;
 		if (special) recoveredMat = D;
 		//fillResult(matrix, recoveredMat, sparse_column, singular_column, result, scene, random);
 		fillResult_spp(matrix, recoveredMat, sparse_column, singular_column, result, scene, random);
