@@ -8338,14 +8338,14 @@ public:
 		//Log(EWarn, "begin separation [%u %u, %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		Fmat S, L;
 		int iteration_time = 0;
-		if (std::min(D.n_rows, D.n_cols) < 8) {
+		/*if (std::min(D.n_rows, D.n_cols) < 8) */{
 			//Log(EWarn, "A small slice");
 			L = D; S.zeros(D.n_rows, D.n_cols);
 		}
-		else if (!tlah::PDMS(iteration_time, L, S, D, known, 8, MAX_ITERATION, STOP_ERROR)) {
+		/*else if (!tlah::PDMS(iteration_time, L, S, D, known, 8, MAX_ITERATION, STOP_ERROR)) {
 			Log(EError, "Failed to recover at slice [%u %u, %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 			return;
-		}
+		}*/
 
 
 #if 0
