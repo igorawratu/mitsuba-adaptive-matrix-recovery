@@ -5526,7 +5526,7 @@ public:
 
 				for (uint32_t r = 0; r < n_row; r++) {
 
-					if (!column->estimate_tag(r)) {
+					/*if (!column->estimate_tag(r)) */{
 						Float e;
 						int16_t v = -1;
 						Spectrum m_rgb;
