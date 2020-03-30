@@ -812,7 +812,7 @@ void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQuery
 
         if(rRec.its.isEmitter() || rRec.its.getBSDF()->getType() & BSDF::ESmooth){
         	if(rRec.its.isEmitter()){
-        		samplePath->addLi(/*throughput * nvLi(ray, rRec, scattered, shadow_count)*/rRec.its.Le(rRec.its.shFrame.n));
+        		samplePath->addLi(/*throughput * nvLi(ray, rRec, scattered, shadow_count)*/rRec.its.Le(rRec.its.wi));
         	}
 
         	samplePath->emplaceSensor(rRec.its, throughput);
