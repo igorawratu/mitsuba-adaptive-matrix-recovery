@@ -1,0 +1,49 @@
+#!/bin/bash
+set -x
+source_path="${BASH_SOURCE[0]}"
+source_dir=$(dirname "${source_path}")
+
+rm "${source_dir}/classroom/scene_"*
+rm "${source_dir}/classroom/timings"*
+rm "${source_dir}/classroom/samplerates"*
+
+#MDLC with matrix sep
+for i in {1..5}
+do
+	mitsuba "${source_dir}/classroom/scene.xml" -Dsps=1 -Dcps=500
+	python3 "${source_dir}/../compare_err.py" "${source_dir}/classroom/scene.exr" "${source_dir}/classroom/groundtruth.exr" "${source_dir}/classroom/scene_matsep_500"
+done
+mv "${source_dir}/classroom/timings" "${source_dir}/classroom/timings_matsep_500"
+mv "${source_dir}/classroom/samplerates" "${source_dir}/classroom/samplerates_matsep_500"
+
+for i in {1..5}
+do
+	mitsuba "${source_dir}/classroom/scene.xml" -Dsps=1 -Dcps=1000
+	python3 "${source_dir}/../compare_err.py" "${source_dir}/classroom/scene.exr" "${source_dir}/classroom/groundtruth.exr" "${source_dir}/classroom/scene_matsep_1000"
+done
+mv "${source_dir}/classroom/timings" "${source_dir}/classroom/timings_matsep_1000"
+mv "${source_dir}/classroom/samplerates" "${source_dir}/classroom/samplerates_matsep_1000"
+
+for i in {1..5}
+do
+	mitsuba "${source_dir}/classroom/scene.xml" -Dsps=1 -Dcps=2000
+	python3 "${source_dir}/../compare_err.py" "${source_dir}/classroom/scene.exr" "${source_dir}/classroom/groundtruth.exr" "${source_dir}/classroom/scene_matsep_2000"
+done
+mv "${source_dir}/classroom/timings" "${source_dir}/classroom/timings_matsep_2000"
+mv "${source_dir}/classroom/samplerates" "${source_dir}/classroom/samplerates_matsep_2000"
+
+for i in {1..5}
+do
+	mitsuba "${source_dir}/classroom/scene.xml" -Dsps=1 -Dcps=4000
+	python3 "${source_dir}/../compare_err.py" "${source_dir}/classroom/scene.exr" "${source_dir}/classroom/groundtruth.exr" "${source_dir}/classroom/scene_matsep_4000"
+done
+mv "${source_dir}/classroom/timings" "${source_dir}/classroom/timings_matsep_4000"
+mv "${source_dir}/classroom/samplerates" "${source_dir}/classroom/samplerates_matsep_4000"
+
+for i in {1..5}
+do
+	mitsuba "${source_dir}/classroom/scene.xml" -Dsps=1 -Dcps=8000
+	python3 "${source_dir}/../compare_err.py" "${source_dir}/classroom/scene.exr" "${source_dir}/classroom/groundtruth.exr" "${source_dir}/classroom/scene_matsep_8000"
+done
+mv "${source_dir}/classroom/timings" "${source_dir}/classroom/timings_matsep_8000"
+mv "${source_dir}/classroom/samplerates" "${source_dir}/classroom/samplerates_matsep_8000"

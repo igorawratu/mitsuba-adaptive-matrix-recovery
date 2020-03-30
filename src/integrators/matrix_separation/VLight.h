@@ -164,10 +164,6 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 
 		Spectrum light_energy(0.f);
 
-		if(its.isEmitter()){
-			light_energy = its.Le(its.shFrame.n);
-		}
-
 		return contrib;
 	}
 

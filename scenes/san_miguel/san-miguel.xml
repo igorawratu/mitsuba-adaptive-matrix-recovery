@@ -6,8 +6,8 @@
 		<integer name="vplCount" value="100000"/>
 		<integer name="vplMaxDepth" value="10"/>
 		<integer name="vpsMaxDepth" value="10"/>
-		<float name="singularThreshold" value="0.005"/>
-		<integer name="maxCutsize" value="5000"/>
+		<float name="singularThreshold" value="$st"/>
+		<integer name="maxCutsize" value="$cps"/>
 	</integrator>
 
 	<bsdf id="CafeChair_Metal_material" type="diffuse">
