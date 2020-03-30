@@ -3171,13 +3171,13 @@ public:
 	//	m_clamping = 0.2;
 
 
-#ifdef MAX_CUT_SIZE
+/*#ifdef MAX_CUT_SIZE
 		m_maxCutsize = MAX_CUT_SIZE;
-#endif
+#endif*/
 
-#ifdef SPARSE_THRESHOLD
+/*#ifdef SPARSE_THRESHOLD
 		m_singular_threshold = SPARSE_THRESHOLD;
-#endif
+#endif*/
 
 		m_standard_column_size = 1000;
 		m_postprocess_slice = false;
@@ -5518,11 +5518,11 @@ public:
 		int32_t c = -1;
 		for (list<Column>::iterator column = matrix.columns.begin(); column != matrix.columns.end(); column++, cc++) {
 
-			/*if (column->max_eval == 0) {
+			if (column->max_eval == 0) {
 				continue;
-			}*/
+			}
 
-			if (/*column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_row*/true) {
+			if (column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_row) {
 
 				for (uint32_t r = 0; r < n_row; r++) {
 
