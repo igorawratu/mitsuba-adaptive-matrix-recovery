@@ -154,8 +154,7 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 		wi = normalize(wi);	
 
 		float atten = 1.f / (d * d);
-		Vector n = vpl.its.wi.z > 0.f ? direction : -direction;
-		float light_bsdf = std::max(dot(-wi, n), 0.0f) * INV_PI;
+		float light_bsdf = std::max(dot(-wi, direction), 0.0f) * INV_PI;
 
 		const BSDF *bsdf = its.getBSDF();
 		BSDFSamplingRecord brec(its, its.toLocal(wi));
