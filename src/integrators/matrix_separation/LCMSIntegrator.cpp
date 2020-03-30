@@ -112,7 +112,7 @@ using std::map;
 #define SHADOW_REINFORCE 20
 
 #define MAX_CUT_SIZE 5000
-#define SPARSE_THRESHOLD 0.005
+#define SPARSE_THRESHOLD 0
 
 #define NOISE_THRESHOLD 0.2
 #define SAMPLE_RATIO_ADD 1
