@@ -103,7 +103,7 @@ void VLightMap::generateStandardVPL(Random *random)
 					Spectrum r = itr->emitter->evalDirection(dRec, pRec);
 			
 					r *= M_PI;  // standard VPL don't do this, but we use it to normalize D term : cos(theta) / PI
-					m_oriented_tree.m_leaves.emplace_back(itr->P * r, itr->its.p, itr->its.wi.z > 0.f ? itr->its.shFrame.n : -itr->its.shFrame.n); 
+					m_oriented_tree.m_leaves.emplace_back(itr->P * r, itr->its.p, itr->its.shFrame.n); 
 				} 
 				else if (itr->emitter->getType() & Emitter::EDeltaPosition) { // emitters outside the structure
 					m_omni_tree.m_leaves.emplace_back(itr->P, itr->its.p, itr->emitter); 
