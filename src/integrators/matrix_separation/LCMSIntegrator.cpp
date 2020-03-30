@@ -8412,13 +8412,13 @@ public:
 #endif
 
 
-		if (std::min(D.n_rows, D.n_cols) >= 8) {
+		/*if (std::min(D.n_rows, D.n_cols) >= 8) {
 			Fmat green_picture;
 			drawGreenPicture(green_picture, matrix, sparse_column, S, L, D, random);
 			//pfm(green_picture, "ratio.pfm");
 			denoise_filter(matrix, L, S, D, sparse_column, shadowCount, random, green_picture);
 
-		}
+		}*/
 
 		// error detection
 #if 0
