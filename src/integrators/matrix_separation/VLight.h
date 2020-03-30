@@ -162,7 +162,7 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 
 		Spectrum contrib = sensor_bsdf * atten * light_bsdf;
 
-		float light_energy = its.isEmitter() ? return its.Le(its.wi) : 0.f;
+		float light_energy = its.isEmitter() ? return its.Le(-its.wi) : 0.f;
 
 		return contrib + light_energy;
 	}
