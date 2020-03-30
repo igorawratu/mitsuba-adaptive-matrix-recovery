@@ -5809,6 +5809,7 @@ public:
 
 		for (uint32_t r = 0; r < n_row; r++) {
 			for (auto &spp : matrix.rows[r].spp_sensors) {
+				spp.MVTDI = Spectrum(0.f);
 				if(spp.sensor->its.isEmitter()){
 					spp.MVTDI = Spectrum(0.f);//spp.sensor->its.Le(spp.sensor->its.shFrame.n);
 				}
