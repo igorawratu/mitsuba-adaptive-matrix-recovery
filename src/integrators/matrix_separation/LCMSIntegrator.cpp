@@ -8134,7 +8134,7 @@ public:
 
 #endif
 
-#ifdef CSPONZA
+/*#ifdef CSPONZA
 		if (//sn->sampleBbox.contains(Point2i(706, 603)) ||
 			//sn->sampleBbox.contains(Point2i(100, 100)) ||
 			//TAABB<Point2i>(Point2i(893, 1496), Point2i(214, 173)) == (sn->sampleBbox) ||
@@ -8146,7 +8146,7 @@ public:
 			max_cutsize = 600;
 		}
 		//if (!special) return;
-#endif//
+#endif//*/
 
 #ifdef CARNIVAL
 
