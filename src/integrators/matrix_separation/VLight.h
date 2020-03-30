@@ -161,11 +161,8 @@ struct VOrientedLight : public VLight, public ProjectableObject<Float, 6>
 		Spectrum sensor_bsdf = bsdf->eval(brec) * sensor->scattering_normalization;
 
 		Spectrum contrib = sensor_bsdf * atten * light_bsdf;
-		Spectrum emission(0.f);
 
-		emission = its.isEmitter() ? its.Le(its.shFrame.n) : Spectrum(0.f);
-
-		return contrib + emission;
+		return contrib;
 	}
 
 	virtual void evalRawMTD(Spectrum &d_M, Spectrum &s_M, Float &TD, const VSensor *sensor, Float clamp) const
@@ -310,7 +307,7 @@ struct VOmniLight : public VLight, public ProjectableObject<Float, 3>
 	
 	virtual Spectrum evalMTD(const VSensor *sensor, Float clamp) const
 	{
-		const Intersection &its = sensor->its;
+		/*const Intersection &its = sensor->its;
 		const BSDF *bsdf = its.getBSDF();
 		
 		Vector wo = position - its.p;
@@ -337,7 +334,22 @@ struct VOmniLight : public VLight, public ProjectableObject<Float, 3>
 			}
 		}
 
-		return TD * M;
+		return TD * M;*/
+
+		const Intersection& its = sensor->its;
+		Vector wi = position - its.p;
+		float d = std::max(wi.length(), clamp);
+		wi = normalize(wi);	
+
+		float atten = 1.f / (d * d);
+
+		const BSDF *bsdf = its.getBSDF();
+		BSDFSamplingRecord brec(its, its.toLocal(wi));
+		Spectrum sensor_bsdf = bsdf->eval(brec) * sensor->scattering_normalization;
+
+		Spectrum contrib = sensor_bsdf * atten;
+
+		return contrib;
 
 	}
 
@@ -471,7 +483,7 @@ struct VDirectionalLight : public VLight, public ProjectableObject<Float, 3>
 
 	virtual Spectrum evalMTD(const VSensor *sensor, Float clamp) const
 	{
-		const Intersection &its = sensor->its;
+		/*const Intersection &its = sensor->its;
 		const BSDF *bsdf = its.getBSDF();
 		
 		//Float T = 1.0f;
@@ -491,7 +503,18 @@ struct VDirectionalLight : public VLight, public ProjectableObject<Float, 3>
 			}
 		}
 
-		return TD * M;
+		return TD * M;*/
+
+		const Intersection& its = sensor->its;
+		Vector wi = normalize(-direction);
+
+		const BSDF *bsdf = its.getBSDF();
+		BSDFSamplingRecord brec(its, its.toLocal(wi));
+		Spectrum sensor_bsdf = bsdf->eval(brec) * sensor->scattering_normalization;
+
+		Spectrum contrib = sensor_bsdf;
+
+		return contrib;
 	}
 
 	virtual void evalRawMTD(Spectrum &d_M, Spectrum &s_M, Float &TD, const VSensor *sensor, Float clamp) const {

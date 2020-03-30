@@ -208,15 +208,18 @@ float calculateMinDistance(const Scene *scene, const std::vector<VPL>& vpls, flo
 	return acc_near + (acc_far - acc_near) * clamping;
 }
 
+
 size_t generateVPLs(const Scene *scene, size_t offset, size_t count, int max_depth, bool prune, 
 	std::vector<VPL> &vpls) {
 	if (max_depth <= 1)
 		return 0;
 
-	Properties props("independent");
-	ref<Sampler> sampler = static_cast<Sampler*>(PluginManager::getInstance()->createObject(MTS_CLASS(Sampler), props));
-	sampler->configure();
-	sampler->generate(Point2i(0));
+	Properties props("halton");
+    props.setInteger("scramble", 0);
+    Sampler *sampler = static_cast<Sampler *> (PluginManager::getInstance()->
+        createObject(MTS_CLASS(Sampler), props));
+    sampler->configure();
+    sampler->generate(Point2i(0));
 
 	const Sensor *sensor = scene->getSensor();
 	Float time = sensor->getShutterOpen() + sensor->getShutterOpenTime() * sampler->next1D();
@@ -225,8 +228,8 @@ size_t generateVPLs(const Scene *scene, size_t offset, size_t count, int max_dep
 	int retries = 0;
 
 	while (vpls.size() < count) {
-		//sampler->setSampleIndex(++offset);
-		offset++;
+		sampler->setSampleIndex(++offset);
+		//offset++;
 
 		if (vpls.empty() && ++retries > 10000) {
 			return 0;
@@ -336,7 +339,6 @@ void ManyLightIntegrator::generateVPL(const Scene *scene, const Sensor *sensor, 
 {
 	std::vector<VPL> result;
 	vResult->offset = generateVPLs(scene, vWork->m_offset, vWork->m_numVPL, vWork->m_maxDepth, false, result);
-
 	{
 		std::lock_guard<std::mutex> lock(vpl_mutex_);
 		vpls_.insert(vpls_.end(), result.begin(), result.end());
@@ -826,6 +828,7 @@ void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQuery
 
         rRec.its.getBSDF()->sample(bsdf_sample_record, sampler->next2D());
         ray = Ray(rRec.its.p, bsdf_sample_record.its.toWorld(bsdf_sample_record.wo), ray.time);
+        ray.mint = Epsilon;
         scene->rayIntersect(ray, rRec.its);
 
         rRec.depth++;

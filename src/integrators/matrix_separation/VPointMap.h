@@ -133,19 +133,22 @@ public:
 		return -1;
 	}
 
+	std::vector<const VSensorNode *>& msr(){return m_slice_root;}
+
 	MTS_DECLARE_CLASS();
 public:
 	//protected:
 	VPointTree<VSensor> m_sensor_tree;
 
 	std::vector<pool_ref<SamplePath>> m_sample_pathes;
-	std::vector<const VSensorNode *> m_slice_root;
-
+	
 	Float threshold;
 
 	//std::vector<VPL> m_other_vpls;
 protected:
 	virtual ~VSensorMap();
+	std::vector<const VSensorNode *> m_slice_root;
+
 
 	//ref<std::deque<VPL>> m_vpls;
 

@@ -69,7 +69,7 @@ public:
 	ref<VSensorMap> getSensorMap() { return m_sensor_map; }
 
 	virtual const VPointTree<VSensor> &getSensor() { return m_sensor_map->m_sensor_tree; }
-	virtual const std::vector<const VSensorNode *> &getSliceRoot() { return m_sensor_map->m_slice_root; }
+	virtual const std::vector<const VSensorNode *> &getSliceRoot() { return m_sensor_map->msr(); }
 
 	const std::vector < Intersection > &getClusterCenters() { return m_clusterCenters; }
 

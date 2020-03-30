@@ -103,7 +103,7 @@ using std::map;
 #define STOP_ERROR 0.01
 
 #define NEIGHBOR_RANGE 1
-#define MAX_EXPAND_COLUMN 1000
+#define MAX_EXPAND_COLUMN 5000
 
 #define BORDER_REINFORCE 0
 #define OUTLINE_REINFORCE 0
@@ -111,8 +111,8 @@ using std::map;
 //#define SHADOW_REINFORCE 1000 * 1000 * 10
 #define SHADOW_REINFORCE 20
 
-#define MAX_CUT_SIZE 1000
-#define SPARSE_THRESHOLD 0.0005f
+#define MAX_CUT_SIZE 5000
+#define SPARSE_THRESHOLD 0.005
 
 #define NOISE_THRESHOLD 0.2
 #define SAMPLE_RATIO_ADD 1
@@ -2022,7 +2022,7 @@ namespace {
 			}
 
 			m_rgb = lightNode->evalMTD(rows[r].sensor, m_clamping);
-			e = m_rgb.average();
+			e = m_rgb.getLuminance();
 			if (e <= m_cutoff) {
 				e = 0;
 				m_rgb = Spectrum(0.0f);
@@ -3121,8 +3121,6 @@ namespace {
 
 }
 
-
-
 class LCMSIntegrator : public ManyLightIntegrator {
 
 	struct SliceLightRecord {
@@ -4099,14 +4097,14 @@ public:
 	//	cout << matrix.columns.size() << endl;
 		matrix.updateColumnAverage();
 		
-		int n_valid = 0;
+		/*int n_valid = 0;
 		for (auto column : matrix.columns) {
 			if (column.max_eval > 0) {
 				n_valid++;
 			}
 		}
 
-		/*if (n_valid > 50) {
+		if (n_valid > 50) {
 			intensity_threshold = std::max(matrix.sum_avg_eval * singular_threshold, MAX_AVG_EVAL);
 			error_threshold = std::max(0.1f * intensity_threshold, MAX_AVG_EVAL);
 
@@ -5458,8 +5456,8 @@ public:
 	//	known.resize(n_known);
 	//	
 	//}
-
-	void disperseNoise_predictor(Fmat &D, arma::uvec &known, vector<list<Column>::iterator> &sparse_column, vector<list<Column>::iterator> &singular_column, LTMatrix &matrix, ref<Random> &random) const
+	
+	void disperseNoise_predictor(Fmat &D, arma::uvec &known, vector<list<Column>::iterator> &sparse_column, vector<list<Column>::iterator> &singular_column, LTMatrix &matrix, ref<Random> &random)
 	{
 
 		uint32_t n_row = matrix.rows.size();
@@ -8230,10 +8228,6 @@ public:
 		//Log(EWarn, "init slice [%u %u %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		sparseSample(matrix, scene, sample_ratio, random, shadowCount);
 
-
-		
-
-	
 		if (matrix.columns.size() == 0 || matrix.rows.size() == 0 || matrix.sum_avg_eval == 0) {
 			//Log(EWarn, "An empty slice [%u %u, %u, %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 			return;
@@ -8326,10 +8320,7 @@ public:
 #endif
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
 
-
-
 		disperseNoise_predictor(D, known, sparse_column, singular_column, matrix, random);
-
 
 
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
@@ -8690,6 +8681,7 @@ public:
 		//t0->stop();
 	}
 
+	
 
 	void renderSlice(const Scene *scene, const Sensor *sensor, Sampler *sampler, const bool &stop, const VSensorNode *slice_root, SliceWorkResult *result) 
 	{
@@ -8708,7 +8700,6 @@ public:
 		//else {
 		//	return;
 		//}
-
 
 		ref<Timer> t0 = new Timer(false);
 		ref<Timer> t1 = new Timer();

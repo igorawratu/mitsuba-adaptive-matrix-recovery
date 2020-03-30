@@ -102,7 +102,6 @@ void SliceProcess::init()
 	//if (!m_integrator.get() || !m_film.get()) {
 	//	return;
 	//}
-
 	if (m_integrator->getSliceRoot().size() > 0) {
 		m_sliceRoot = m_integrator->getSliceRoot();
 	}
@@ -139,7 +138,6 @@ void SliceProcess::init()
 			}
 		}
 	}
-
 
 	m_numSliceGenerated = 0;
 }
