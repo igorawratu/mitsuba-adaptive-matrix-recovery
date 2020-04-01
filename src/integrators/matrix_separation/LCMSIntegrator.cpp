@@ -8321,7 +8321,7 @@ public:
 #endif
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
 
-		disperseNoise_predictor(D, known, sparse_column, singular_column, matrix, random, shadow_count);
+		disperseNoise_predictor(D, known, sparse_column, singular_column, matrix, random, shadowCount);
 
 
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
