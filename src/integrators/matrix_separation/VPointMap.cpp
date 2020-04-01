@@ -2,7 +2,6 @@
 
 #include <queue>
 #include <limits>
-#include <iostream>
 
 MTS_NAMESPACE_BEGIN
 
@@ -318,25 +317,29 @@ void VSensorMap::calAdjSlices(const VSensorNode *slice, std::vector < std::pair 
 	Vector extend = slice->bbox.getExtents();
 	Float l = (extend.x + extend.y + extend.z) / 6;
 
+	while(slices.empty()){
+		std::queue < std::pair < const VSensorNode*, int > > q;
+		q.push({ m_sensor_tree.m_root, 1 });
+		while (!q.empty()) {
+			const VSensorNode *cur = q.front().first;
+			int curOrd = q.front().second;
+			q.pop();
+			//if (cur->num_sensor <= sliceSize && (cur->num_sensor <= sliceSize / 2 || (cur->left->bbox.distanceTo(cur->right->bbox) < l))) {
+			if (cur->isSlice) {	
+				slices.push_back({ cur, curOrd });
+			}
+			else {
+				std::cout << box.distanceTo(cur->left->bbox) << std::endl;
+				if (box.distanceTo(cur->left->bbox) <= l + std::numeric_limits<float>::epsilon())
+					q.push({ cur->left, curOrd * 2 });
+				if (box.distanceTo(cur->right->bbox) <= l + std::numeric_limits<float>::epsilon())
+					q.push({ cur->right, curOrd * 2 + 1 });
+			}
+		}
 
-	std::queue < std::pair < const VSensorNode*, int > > q;
-	q.push({ m_sensor_tree.m_root, 1 });
-	while (!q.empty()) {
-		const VSensorNode *cur = q.front().first;
-		int curOrd = q.front().second;
-		q.pop();
-		//if (cur->num_sensor <= sliceSize && (cur->num_sensor <= sliceSize / 2 || (cur->left->bbox.distanceTo(cur->right->bbox) < l))) {
-		if (cur->isSlice) {	
-			slices.push_back({ cur, curOrd });
-		}
-		else {
-			std::cout << box.distanceTo(cur->left->bbox) << std::endl;
-			if (box.distanceTo(cur->left->bbox) <= l + std::numeric_limits<float>::epsilon())
-				q.push({ cur->left, curOrd * 2 });
-			if (box.distanceTo(cur->right->bbox) <= l + std::numeric_limits<float>::epsilon())
-				q.push({ cur->right, curOrd * 2 + 1 });
-		}
+		l *= 2;
 	}
+	
 
 	assert(!slices.empty());
 
