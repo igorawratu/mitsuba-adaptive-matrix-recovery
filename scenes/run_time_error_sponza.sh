@@ -11,6 +11,7 @@ rm "${source_dir}/sponza/samplerates"*
 for i in {1..5}
 do
 	mitsuba "${source_dir}/sponza/sponza.xml" -Dspp=1 -Dcps=500 -Dst=0.002
+	convert -resize 50% "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/sponza.exr"
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/groundtruth.exr" "${source_dir}/sponza/sponza_matsep_500"
 done
 mv "${source_dir}/sponza/timings" "${source_dir}/sponza/timings_matsep_500"
@@ -19,6 +20,7 @@ mv "${source_dir}/sponza/samplerates" "${source_dir}/sponza/samplerates_matsep_5
 for i in {1..5}
 do
 	mitsuba "${source_dir}/sponza/sponza.xml" -Dspp=1 -Dcps=1000 -Dst=0.001
+	convert -resize 50% "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/sponza.exr"
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/groundtruth.exr" "${source_dir}/sponza/sponza_matsep_1000"
 done
 mv "${source_dir}/sponza/timings" "${source_dir}/sponza/timings_matsep_1000"
@@ -27,6 +29,7 @@ mv "${source_dir}/sponza/samplerates" "${source_dir}/sponza/samplerates_matsep_1
 for i in {1..5}
 do
 	mitsuba "${source_dir}/sponza/sponza.xml" -Dspp=1 -Dcps=2000 -Dst=0.0005
+	convert -resize 50% "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/sponza.exr"
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/groundtruth.exr" "${source_dir}/sponza/sponza_matsep_2000"
 done
 mv "${source_dir}/sponza/timings" "${source_dir}/sponza/timings_matsep_2000"
@@ -35,6 +38,7 @@ mv "${source_dir}/sponza/samplerates" "${source_dir}/sponza/samplerates_matsep_2
 for i in {1..5}
 do
 	mitsuba "${source_dir}/sponza/sponza.xml" -Dspp=1 -Dcps=4000 -Dst=0.00025
+	convert -resize 50% "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/sponza.exr"
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/groundtruth.exr" "${source_dir}/sponza/sponza_matsep_4000"
 done
 mv "${source_dir}/sponza/timings" "${source_dir}/sponza/timings_matsep_4000"
@@ -43,6 +47,7 @@ mv "${source_dir}/sponza/samplerates" "${source_dir}/sponza/samplerates_matsep_4
 for i in {1..5}
 do
 	mitsuba "${source_dir}/sponza/sponza.xml" -Dspp=1 -Dcps=8000 -Dst=0.000125
+	convert -resize 50% "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/sponza.exr"
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/sponza/sponza.exr" "${source_dir}/sponza/groundtruth.exr" "${source_dir}/sponza/sponza_matsep_8000"
 done
 mv "${source_dir}/sponza/timings" "${source_dir}/sponza/timings_matsep_8000"
