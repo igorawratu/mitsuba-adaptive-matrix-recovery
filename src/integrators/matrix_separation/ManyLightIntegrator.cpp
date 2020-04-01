@@ -251,6 +251,9 @@ size_t generateVPLs(const Scene *scene, size_t offset, size_t count, int max_dep
 			vpl.its.p = point_sample.p;
 			vpl.its.time = time;
 			vpl.its.shFrame = point_sample.n.isZero() ? standard_frame : Frame(point_sample.n);
+			if(vpl.its.wi.z < 0.f){
+				vpl.its.shFrame.n = -vpl.its.shFrame.n;
+			}
 			vpl.emitter = emitter;
 			vpls.push_back(vpl);
 
