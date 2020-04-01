@@ -2032,7 +2032,7 @@ namespace {
 			}
 		
 
-			/*if (e > 0)*/ {
+			if (e > 0) {
 				Ray ray = column->lightNode->shadowRay(rows[r].sensorNode->rep_sensor);
 				visibility = !m_scene->rayIntersect(ray);
 			}
@@ -5519,10 +5519,10 @@ public:
 		for (list<Column>::iterator column = matrix.columns.begin(); column != matrix.columns.end(); column++, cc++) {
 
 			if (column->max_eval == 0) {
-				//continue;
+				continue;
 			}
 
-			if (/*column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_row*/true) {
+			if (column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_rowtrue) {
 
 				for (uint32_t r = 0; r < n_row; r++) {
 
