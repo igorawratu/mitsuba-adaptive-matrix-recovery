@@ -3259,7 +3259,7 @@ public:
 		//}
 
 		m_shadow_count = 0;
-
+		m_total_shadows = 0;
 
 		return true;
 	}
@@ -8709,6 +8709,7 @@ public:
 
 		UniqueLock lock(m_resultMutex);
 		m_shadow_count += shadow_count;
+		m_total_shadows += slice_root->num_sensor * m_maxCutsize;
 
 		//m_slice_record.insert(std::make_pair(slice_root, record));
 		//return;
@@ -8860,7 +8861,6 @@ protected:
 	uint32_t m_standard_column_size;
 
 	ref<Mutex> m_sc_mutex;
-	uint32_t m_shadow_count;
 	
 
 	std::map<const VSensorNode *, SliceLightRecord> m_slice_record;

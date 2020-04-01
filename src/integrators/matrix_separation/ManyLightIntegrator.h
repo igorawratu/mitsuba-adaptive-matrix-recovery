@@ -178,6 +178,9 @@ protected:
 	bool m_postprocess_slice = false;
 	std::vector<VPL> vpls_;
 	std::mutex vpl_mutex_;
+
+	uint64_t m_shadow_count;
+	uint64_t m_total_shadows; 
 };
 
 

@@ -845,7 +845,21 @@ void ManyLightIntegrator::collectVSensor(const RayDifferential &r, RadianceQuery
 	
 }
 
+void writeOutputData(Scene* scene, std::string filename, bool new_file, float data){
+    std::ofstream file;
+    auto mode = std::ios::out | std::ios::app;
+    fs::path scene_path = scene->getDestinationFile();
+    std::string filename_and_path = (scene_path.parent_path() / filename).string();
+    file.open(filename_and_path, mode);
 
+    if(!new_file){
+        file << std::endl;
+    }
+
+    file << data;
+    
+    file.close();
+}
 
 
 bool ManyLightIntegrator::render(Scene *scene, RenderQueue *queue, const RenderJob *job, int sceneResID, int sensorResID, int samplerResID)
@@ -882,8 +896,14 @@ bool ManyLightIntegrator::render(Scene *scene, RenderQueue *queue, const RenderJ
 	ref<Timer> timer = new Timer();
 	sched->wait(proc);
 	m_process = NULL;
-	cout << endl << "Core Time: " << timer->getSecondsSinceStart() << endl;
+	float core_time_s = timer->getSecondsSinceStart();
+	cout << endl << "Core Time: " << core_time_s << endl;
 
+	writeOutputData(scene, "timings", false, core_time_s);
+
+	float sample_perc = float(m_shadow_count) / m_total_shadows;
+	writeOutputData(scene, "samplerates", false, sample_perc);
+	cout << endl << "Sample rate: " << sample_perc << endl;
 
 	sched->unregisterResource(integratorResID);
 
