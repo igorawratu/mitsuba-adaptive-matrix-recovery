@@ -5457,7 +5457,7 @@ public:
 	//	
 	//}
 	
-	void disperseNoise_predictor(Fmat &D, arma::uvec &known, vector<list<Column>::iterator> &sparse_column, vector<list<Column>::iterator> &singular_column, LTMatrix &matrix, ref<Random> &random)
+	void disperseNoise_predictor(Fmat &D, arma::uvec &known, vector<list<Column>::iterator> &sparse_column, vector<list<Column>::iterator> &singular_column, LTMatrix &matrix, ref<Random> &random, uint32_t& shadow_count)
 	{
 
 		uint32_t n_row = matrix.rows.size();
@@ -5537,6 +5537,8 @@ public:
 						column->m_rgb(r) = m_rgb;
 						column->visibility(r) = v;
 						column->estimate_tag(r) = true;
+						shadow_count++;
+
 					}
 				}
 
@@ -8319,7 +8321,7 @@ public:
 #endif
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
 
-		disperseNoise_predictor(D, known, sparse_column, singular_column, matrix, random);
+		disperseNoise_predictor(D, known, sparse_column, singular_column, matrix, random, shadow_count);
 
 
 		//disperseNoise(D, known, sparse_column, singular_column, matrix, random);
