@@ -2032,7 +2032,7 @@ namespace {
 			}
 		
 
-			if (e > 0) {
+			/*if (e > 0)*/ {
 				Ray ray = column->lightNode->shadowRay(rows[r].sensorNode->rep_sensor);
 				visibility = !m_scene->rayIntersect(ray);
 			}
