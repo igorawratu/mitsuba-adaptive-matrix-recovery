@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <limits>
+#include <iostream>
 
 MTS_NAMESPACE_BEGIN
 
@@ -329,6 +330,7 @@ void VSensorMap::calAdjSlices(const VSensorNode *slice, std::vector < std::pair 
 			slices.push_back({ cur, curOrd });
 		}
 		else {
+			std::cout << box.distanceTo(cur->left->bbox) << std::endl;
 			if (box.distanceTo(cur->left->bbox) <= l + std::numeric_limits<float>::epsilon())
 				q.push({ cur->left, curOrd * 2 });
 			if (box.distanceTo(cur->right->bbox) <= l + std::numeric_limits<float>::epsilon())
