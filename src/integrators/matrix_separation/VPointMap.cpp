@@ -337,7 +337,7 @@ void VSensorMap::calAdjSlices(const VSensorNode *slice, std::vector < std::pair 
 	}
 
 	if(slices.empty()){
-		std::cout << l << std::endl;
+		std::cout << l << " " << slice->num_sensor << std::endl;
 	}
 
 	assert(!slices.empty());
