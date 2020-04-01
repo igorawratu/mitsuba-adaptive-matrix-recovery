@@ -2951,9 +2951,9 @@
 		<film type="hdrfilm">
 			<boolean name="banner" value="false"/>
 			<string name="fileFormat" value="openexr"/>
-			<integer name="height" value="720"/>
+			<integer name="height" value="1440"/>
 			<string name="pixelFormat" value="rgb"/>
-			<integer name="width" value="1280"/>
+			<integer name="width" value="2560"/>
 
 			<rfilter type="gaussian"/>
 		</film>

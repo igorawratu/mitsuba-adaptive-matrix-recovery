@@ -21,8 +21,8 @@
 		</sampler>
 
 		<film type="hdrfilm">
-			<integer name="width" value="720"/>
-			<integer name="height" value="1280"/>
+			<integer name="width" value="1440"/>
+			<integer name="height" value="2560"/>
 			<string name="fileFormat" value="openexr"/>
 			<string name="pixelFormat" value="rgb"/>
 			<float name="gamma" value="2.2"/>
