@@ -5519,10 +5519,10 @@ public:
 		for (list<Column>::iterator column = matrix.columns.begin(); column != matrix.columns.end(); column++, cc++) {
 
 			if (column->max_eval == 0) {
-				continue;
+				//continue;
 			}
 
-			if (column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_row) {
+			if (/*column->max_eval > singular_threshold || column->known_estimate.size() >= 0.8 * n_row*/true) {
 
 				for (uint32_t r = 0; r < n_row; r++) {
 
