@@ -25,8 +25,8 @@
 		</sampler>
 
 		<film type="hdrfilm">
-			<integer name="width" value="1600"/>
-			<integer name="height" value="1200"/>
+			<integer name="width" value="800"/>
+			<integer name="height" value="600"/>
 
 			<rfilter type="gaussian"/>
 		</film>
