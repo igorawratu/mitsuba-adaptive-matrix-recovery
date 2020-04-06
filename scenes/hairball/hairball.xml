@@ -26,8 +26,9 @@
 		</sampler>
 
 		<film type="hdrfilm">
-			<integer name="height" value="600"/>
-			<integer name="width" value="800"/>
+			<integer name="height" value="1200"/>
+			<integer name="width" value="1600"/>
+			<boolean name="banner" value="false" />
 
 			<rfilter type="gaussian"/>
 		</film>
