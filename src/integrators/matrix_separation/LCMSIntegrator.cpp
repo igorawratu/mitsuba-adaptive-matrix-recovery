@@ -6729,7 +6729,7 @@ public:
 				Float ran = random->nextFloat() * pdf_sum;
 
 				Float s = 0;
-				int select = -1;
+				int select = 0;
 				for (int i = 0; i < K_NEIGHBOR; i++) {
 					s += pdf[i];
 					if (ran <= s) {
