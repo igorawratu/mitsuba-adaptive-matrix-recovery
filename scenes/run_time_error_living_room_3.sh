@@ -15,7 +15,7 @@ do
 	python3 "${source_dir}/../compare_err.py" "${source_dir}/living_room_3/living-room-3/scene.exr" "${source_dir}/living_room_3/living-room-3/groundtruth.exr" "${source_dir}/living_room_3/living-room-3/scene_matsep_500"
 done
 mv "${source_dir}/living_room_3/living-room-3/timings" "${source_dir}/living_room_3/living-room-3/timings_matsep_500"
-mv "${source_dir}/living_room_3/living-room-3/samplerates" "${source_dir}/living_room_3/living-room-3/samplerates_mdlc_500"
+mv "${source_dir}/living_room_3/living-room-3/samplerates" "${source_dir}/living_room_3/living-room-3/samplerates_matsep_500"
 
 for i in {1..5}
 do
