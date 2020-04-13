@@ -4097,7 +4097,7 @@ public:
 	//	cout << matrix.columns.size() << endl;
 		matrix.updateColumnAverage();
 		
-		/*int n_valid = 0;
+		int n_valid = 0;
 		for (auto column : matrix.columns) {
 			if (column.max_eval > 0) {
 				n_valid++;
@@ -4109,7 +4109,7 @@ public:
 			error_threshold = std::max(0.1f * intensity_threshold, MAX_AVG_EVAL);
 
 			contractMatrix(matrix, intensity_threshold, error_threshold, random, shadow_count);
-		}*/
+		}
 
 		//cout << matrix.columns.size() << endl;
 
@@ -8072,7 +8072,7 @@ public:
 		//Log(EWarn, "init slice [%u %u %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		//t0->start();
 	
-		int max_cutsize = m_maxCutsize;
+		int max_cutsize = m_maxCutsize * 0.4f;
 		std::srand(0);
 		Float singular_thresholding = m_singular_threshold;
 		Float sample_ratio = m_sample_ratio;
