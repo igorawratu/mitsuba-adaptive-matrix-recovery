@@ -8072,7 +8072,7 @@ public:
 		//Log(EWarn, "init slice [%u %u %u %u]", slice_root->sampleBbox.min.x, slice_root->sampleBbox.min.y, slice_root->sampleBbox.max.x, slice_root->sampleBbox.max.y);
 		//t0->start();
 	
-		int max_cutsize = m_maxCutsize * 0.4f;
+		int max_cutsize = m_maxCutsize * 0.5f;
 		std::srand(0);
 		Float singular_thresholding = m_singular_threshold;
 		Float sample_ratio = m_sample_ratio;
