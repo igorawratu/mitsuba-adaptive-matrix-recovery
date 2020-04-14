@@ -7,7 +7,7 @@ rm "${source_dir}/hairball/hairball_"*
 rm "${source_dir}/hairball/timings"*
 rm "${source_dir}/hairball/samplerates"*
 
-MDLC with matrix sep
+#MDLC with matrix sep
 for i in {1..5}
 do
 	mitsuba "${source_dir}/hairball/hairball.xml" -Dspp=1 -Dcps=500 -Dst=0.002
